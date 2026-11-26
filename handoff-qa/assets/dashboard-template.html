@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handoff QA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090b; --frame:#0d0e11; --card:#131519; --card2:#191c21; --hover:#1e2127;
+  --line:#22252b; --line2:#2d3138;
+  --ink:#eceef2; --muted:#8b909a; --dim:#5b6069;
+  --green:#4ade80; --green-d:#16a34a; --green-s:rgba(74,222,128,.12);
+  --red:#f87171; --red-s:rgba(248,113,113,.12);
+  --amber:#fbbf24; --amber-s:rgba(251,191,36,.12);
+  --indigo:#8b9cff; --indigo-s:rgba(139,156,255,.14);
+  --font:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --mono:"Chakra Petch",ui-sans-serif,system-ui,sans-serif; /* one family everywhere; tabular digits keep numbers aligned */
+  --r:14px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-variant-numeric:tabular-nums;background:radial-gradient(1200px 600px at 50% -10%,#1a1d24 0%,var(--bg) 60%) fixed;color:var(--ink);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased;padding:16px}
+a{color:var(--indigo)}
+code{font:12.5px/1.4 var(--mono);background:var(--card2);border:1px solid var(--line);padding:1px 5px;border-radius:5px;word-break:break-word}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+button{font:inherit;color:inherit}
+svg.i{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- frame ---------- */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 32px);background:var(--frame);border:1px solid var(--line);border-radius:22px;overflow:clip;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.side{position:sticky;top:0;align-self:start;height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;display:flex;flex-direction:column;gap:4px;padding:18px 12px;border-right:1px solid var(--line);background:#0b0c0f}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 16px;font:600 18px var(--font);letter-spacing:.01em;text-transform:lowercase}
+.brand .mark{width:22px;height:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.brand .mark i{border-radius:2px;background:var(--line2)} .brand .mark i:nth-child(odd){background:var(--muted)}
+.navlabel{font:500 11px var(--font);color:var(--dim);padding:10px 10px 4px}
+.navitem{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:var(--muted);cursor:pointer;font-weight:500;border:1px solid transparent}
+.navitem:hover{color:var(--ink);background:var(--card)}
+.navitem[aria-current="page"]{color:var(--ink);background:var(--card2);border-color:var(--line)}
+.navitem:focus-visible{outline:2px solid var(--indigo);outline-offset:1px}
+.navitem .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb{font:500 11px var(--mono);padding:1px 7px;border-radius:99px}
+.nb.dim{background:var(--card2);color:var(--dim)}
+.nb.red{background:var(--red-s);color:var(--red)} .nb.indigo{background:var(--indigo-s);color:var(--indigo)} .nb.green{background:var(--green-s);color:var(--green)}
+.side .grow{flex:1}
+.pagecard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px;margin-bottom:8px}
+.pagecard small{color:var(--dim);font-size:11px}
+.pagecard b{font-weight:600}
+.pagecard a{font-size:12px;color:var(--muted);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exportcard{border-radius:14px;padding:14px;background:linear-gradient(160deg,#2b3cff 0%,#1a248f 55%,#121763 100%);border:1px solid rgba(255,255,255,.12);display:grid;gap:6px}
+.exportcard b{font-size:15px;font-weight:600}
+.exportcard p{margin:0;font-size:12px;color:rgba(255,255,255,.75)}
+.exportcard button{margin-top:6px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;border-radius:9px;padding:8px;font-weight:600;cursor:pointer}
+.exportcard button:hover{background:rgba(255,255,255,.18)}
+.exportcard .copied{font-size:12px;color:#c7f9d4;min-height:0}
+
+/* ---------- top bar ---------- */
+.mainwrap{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(13,14,17,.88);backdrop-filter:blur(10px)}
+.crumb{display:flex;align-items:center;gap:8px;font-weight:600}
+.crumb .sep{color:var(--dim);font-weight:400}
+.crumb .muted{color:var(--muted);font-weight:500}
+.topbar .spacer{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 10px;width:300px;color:var(--dim)}
+.search:focus-within{border-color:var(--line2);color:var(--muted)}
+.search input{all:unset;flex:1;color:var(--ink);font-size:13px;min-width:0}
+.search input::placeholder{color:var(--dim)}
+.kbd{font:500 11px var(--mono);border:1px solid var(--line2);border-radius:5px;padding:0 5px;color:var(--dim)}
+.seg{display:flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{all:unset;cursor:pointer;font:500 12.5px var(--font);padding:4px 10px;border-radius:7px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.seg button span{font:500 11px var(--mono);color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--hover);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+.seg button[aria-pressed="true"] span{color:var(--muted)}
+.seg button:focus-visible{outline:2px solid var(--indigo)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:var(--card2);color:var(--ink);font:500 12.5px var(--font);padding:6px 11px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.ghost{background:transparent}
+.copied{font-size:12px;color:var(--green)}
+
+/* ---------- content ---------- */
+main{padding:20px 22px 60px;display:grid;gap:14px;align-content:start}
+.grid{display:grid;gap:14px}
+.g-top{grid-template-columns:minmax(340px,5fr) 7fr}
+.g-mid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.chead{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.chead h3{margin:0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.chead .spacer{flex:1}
+.chip{font:500 11px var(--mono);color:var(--muted);border:1px solid var(--line2);border-radius:7px;padding:2px 7px}
+.muted{color:var(--muted)} .small{font-size:12px}
+
+/* health */
+.health{display:flex;flex-direction:column}
+.health .gauge{margin:auto;width:100%}
+.health .kv{margin-top:auto}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hstats > div{display:grid;gap:0}
+.hval{display:flex;align-items:center;gap:6px;font:300 30px/1.1 var(--font);font-variant-numeric:tabular-nums}
+.hval svg{width:18px;height:18px}
+.hstats small{color:var(--muted);font-size:12px}
+.gauge{position:relative;height:190px;margin:10px auto 4px;max-width:340px}
+.gauge .s{position:absolute;left:50%;bottom:6px;width:15px;height:46px;border-radius:9px;transform-origin:50% 100%;background:#202329;box-shadow:inset 0 -6px 8px rgba(0,0,0,.25)}
+.gauge .s.c{background:linear-gradient(180deg,#a7f3c0 0%,#4ade80 35%,#16a34a 100%);box-shadow:inset 0 2px 2px rgba(255,255,255,.35),0 0 14px rgba(74,222,128,.18)}
+.gauge .s.a{background:linear-gradient(180deg,#fde68a 0%,#fbbf24 40%,#d97706 100%);box-shadow:inset 0 2px 2px rgba(255,255,255,.3)}
+.gauge .s.r{background:linear-gradient(180deg,#fecaca 0%,#f87171 40%,#dc2626 100%);box-shadow:inset 0 2px 2px rgba(255,255,255,.3)}
+.gauge .s.p{background:linear-gradient(180deg,#c7d0ff 0%,#8b9cff 40%,#4f5fd6 100%);box-shadow:inset 0 2px 2px rgba(255,255,255,.3)}
+.gcenter{position:absolute;left:0;right:0;bottom:4px;text-align:center}
+.gcenter b{display:block;font:300 54px/1 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gcenter b span{font-size:20px;color:var(--muted);margin-left:2px}
+.gcenter small{color:var(--muted);font-size:12px}
+.g0,.g100{position:absolute;bottom:-14px;font:500 11px var(--mono);color:var(--dim)}
+.g0{left:8%} .g100{right:7%}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin:22px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px}
+.kv div{display:flex;gap:6px;min-width:0;padding-left:10px;border-left:2px solid var(--line2)}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:13px;font-variant-numeric:tabular-nums}
+.tbl th{font:500 12px var(--font);color:var(--dim);text-align:left;padding:0 10px 2px}
+.tblwrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.tbl td{padding:10px 10px;background:var(--card2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+.tbl td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover td{background:var(--hover)}
+.tbl .cname{display:flex;align-items:center;gap:10px;font-weight:500}
+.ticon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.tbl .num{color:var(--muted)} .tbl .num.hot{color:var(--ink);font-weight:600}
+.prog{display:flex;align-items:center;gap:10px}
+.segm{display:inline-flex;gap:2px;align-items:center}
+.segm i{width:4px;height:14px;border-radius:2px;background:#2a2e35}
+.segm i.c{background:var(--green)} .segm i.p{background:var(--indigo)} .segm i.r{background:var(--red)} .segm i.a{background:var(--amber)}
+.pct{font:500 12px var(--mono);color:var(--muted);min-width:34px}
+
+/* tags */
+.tag{display:inline-flex;align-items:center;gap:6px;font:500 11.5px var(--font);padding:2px 8px;border-radius:99px;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag.plain::before{display:none}
+.tag.red{color:var(--red);background:var(--red-s);border-color:transparent}
+.tag.amber{color:var(--amber);background:var(--amber-s);border-color:transparent}
+.tag.indigo{color:var(--indigo);background:var(--indigo-s);border-color:transparent}
+.tag.green{color:var(--green);background:var(--green-s);border-color:transparent}
+.tag.mono{font-family:var(--mono);font-size:11px}
+
+/* mid cards */
+.bignum{display:flex;align-items:flex-end;gap:12px;margin-bottom:14px}
+.bignum b{font:300 50px/1 var(--font);letter-spacing:-.02em}
+.bignum span{color:var(--muted);font-size:12.5px;line-height:1.35}
+.rows{display:grid;gap:10px}
+.mrow{display:grid;grid-template-columns:96px auto 1fr;align-items:center;gap:12px;font-size:13px}
+.mrow .segm{gap:3px}
+.mrow .segm i{width:6px}
+.mrow b{font:600 13px var(--mono)}
+.mrow .nm{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.dot.red{background:var(--red)} .dot.amber{background:var(--amber)} .dot.indigo{background:var(--indigo)} .dot.green{background:var(--green)} .dot.dim{background:var(--dim)}
+.cfoot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
+.passlist{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:13px}
+.passlist li{display:flex;gap:8px;align-items:flex-start;color:var(--muted)}
+.passlist li svg{color:var(--green);margin-top:2px;width:14px;height:14px}
+.insight{margin-top:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card2);font-size:12.5px;color:var(--muted)}
+.insight b{color:var(--ink);font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:2px;font-size:12px}
+
+/* lighthouse tab */
+.lhgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lhscore{display:flex;flex-direction:column;align-items:center;text-align:center}
+.lhscore .gauge{height:132px;max-width:230px;width:100%;margin:4px auto 0}
+.lhscore .gauge .s{width:11px;height:32px;bottom:4px}
+.lhscore .gcenter b{font-size:44px}
+.lhscore h3{margin:6px 0 2px;font-size:14px;font-weight:600}
+.lhscore small{color:var(--muted);font-size:12px}
+.vitals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.vital{border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:12px 14px;display:grid;gap:2px}
+.vital .k{display:flex;align-items:center;gap:8px;font:600 12px var(--mono);color:var(--muted)}
+.vital b{font:300 30px/1.15 var(--font);letter-spacing:-.01em}
+.vital small{color:var(--dim);font-size:11.5px}
+.vital.good b{color:var(--green)} .vital.avg b{color:var(--amber)} .vital.bad b{color:var(--red)}
+.scorebadge{font:600 12px var(--mono);padding:2px 8px;border-radius:99px}
+.scorebadge.green{background:var(--green-s);color:var(--green)} .scorebadge.amber{background:var(--amber-s);color:var(--amber)} .scorebadge.red{background:var(--red-s);color:var(--red)}
+.empty.ok{display:flex;align-items:center;gap:8px;color:var(--green)}
+@media (max-width:1180px){ .vitals{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:900px){ .lhgrid{grid-template-columns:1fr} .vitals{grid-template-columns:1fr 1fr} }
+
+/* area hero */
+.areahero{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.areahero .aicon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--card2);border:1px solid var(--line);color:var(--ink)}
+.areahero .aicon svg{width:20px;height:20px}
+.areahero h2{margin:0;font-size:32px;font-weight:300;line-height:1.1;letter-spacing:-.01em}
+.areahero small{color:var(--muted)}
+.areahero .grow{flex:1}
+.areahero .prog .segm i{height:22px;width:5px}
+.areahero .prog b{font:300 30px var(--font)}
+
+/* findings */
+.sechead{display:flex;align-items:center;gap:10px;margin-top:6px}
+.sechead h2{margin:0;font-size:26px;font-weight:300;letter-spacing:-.01em}
+.sechead .spacer{flex:1}
+.fsec{padding:0;overflow:clip}
+.fsec-head{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:14px 18px;cursor:pointer}
+.fsec-head:hover{background:var(--card2)}
+.fsec-head:focus-visible{outline:2px solid var(--indigo);outline-offset:-2px}
+.fsec-head .ticon{color:var(--ink)}
+.fsec-head h3{margin:0;font-size:15px;font-weight:600}
+.fsec-head .grow{flex:1}
+.fsec-head .pct{text-align:right}
+.chev{width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--line2);border-radius:8px;color:var(--muted);transition:transform .18s ease}
+.chev svg{width:12px;height:12px}
+.fsec.collapsed .chev{transform:rotate(-90deg)}
+.fsec.collapsed .flist{display:none}
+.flist{border-top:1px solid var(--line)}
+.finding{display:grid;grid-template-columns:20px 1fr;gap:4px 14px;padding:16px 18px;border-bottom:1px solid var(--line);position:relative}
+.finding:last-child{border-bottom:0}
+.finding::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;background:var(--red)}
+.finding.sev-partial::before{background:var(--amber)} .finding.sev-manual::before{background:var(--indigo)}
+.finding.is-pending::before{background:repeating-linear-gradient(180deg,var(--indigo) 0 4px,transparent 4px 7px)}
+.finding.is-closed::before{background:var(--green)}
+.finding.is-ignored{padding:10px 18px;background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(255,255,255,.015) 10px 20px)}
+.finding.is-ignored::before{background:var(--line2)}
+.finding.is-ignored .ftitle{color:var(--dim);font-weight:500;cursor:default}
+.finding.is-ignored .tags,.finding.is-ignored .where{opacity:.7}
+.fhead .grow,.statusrow .grow{flex:1}
+.ignbtn svg{width:14px;height:14px}
+.btn.ghost.ignbtn{color:var(--muted);border-color:var(--line)}
+.btn.ghost.ignbtn:hover{color:var(--ink);border-color:var(--line2)}
+.sectool{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--dim);background:var(--card2)}
+.sectool span{flex:1}
+.finding.is-closed .fmain > :not(.fhead):not(.fbody){opacity:.6}
+.finding.is-closed .ftitle{text-decoration:line-through;color:var(--muted)}
+.cb{appearance:none;width:18px;height:18px;margin:2px 0 0;border:1.5px solid var(--line2);border-radius:6px;background:var(--card2);cursor:pointer;display:grid;place-items:center}
+.cb:checked{background:var(--green);border-color:var(--green)}
+.cb:checked::after{content:"";width:9px;height:5px;border:2px solid #052e14;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.fmain{display:grid;gap:8px;min-width:0}
+.fhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.ftitle{font-weight:600;font-size:14.5px;cursor:pointer;margin-right:4px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.where{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.where svg{width:13px;height:13px;color:var(--dim)}
+.fbody{display:grid;gap:10px;font-size:13.5px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmp > div{border-radius:10px;padding:9px 12px;background:var(--card2);border:1px solid var(--line)}
+.cmp b{display:block;font:500 11.5px var(--font);color:var(--dim);margin-bottom:2px}
+.fix{display:flex;gap:8px;align-items:baseline;padding:9px 12px;border-radius:10px;background:var(--green-s);color:#cfeedd}
+.fix strong{color:var(--green);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.xbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:transparent;color:var(--muted);font:500 12.5px var(--font);padding:5px 10px;border-radius:8px;cursor:pointer}
+.xbtn:hover,.xbtn[aria-expanded="true"]{color:var(--ink);background:var(--card2)}
+.xbtn svg{width:11px;height:11px;transform:rotate(-90deg);transition:transform .18s ease}
+.xbtn[aria-expanded="true"] svg{transform:none}
+.panel{border:1px solid var(--line);border-radius:10px;background:var(--card2);padding:12px 14px;display:grid;gap:10px}
+.panel .why{color:var(--muted);font-size:12.5px}
+.panel .why b{color:var(--ink);font-weight:600;margin-right:4px}
+.panel ol{margin:0;padding-left:20px;display:grid;gap:5px}
+.panel pre{margin:0;font:12px/1.55 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;overflow-x:auto;white-space:pre;color:#cdd3de}
+.panel pre code{background:none;border:0;padding:0}
+.refs{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px}
+.nodes{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.nodes li{display:grid;gap:6px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.nodes li:last-child{border-bottom:0;padding-bottom:0}
+.nodes .summary{color:var(--muted);font-size:12.5px}
+.statusrow{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.statusrow > label{font-size:12px;color:var(--dim)}
+.select{appearance:none;font:500 12.5px var(--font);color:var(--ink);background:var(--card2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%238b909a' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center/10px;border:1px solid var(--line2);border-radius:8px;padding:6px 30px 6px 10px;cursor:pointer}
+.select:hover{border-color:var(--muted)}
+.select.pending{color:var(--indigo);border-color:rgba(139,156,255,.4)}
+.select.closed{color:var(--green);border-color:rgba(74,222,128,.35)}
+.teamfield{display:flex;gap:8px;align-items:center;flex:1;min-width:260px}
+.teamfield label{font-size:12px;color:var(--indigo);white-space:nowrap}
+.teamfield input{flex:1;min-width:0;font:13px var(--font);color:var(--ink);background:var(--card2);border:1px solid rgba(139,156,255,.45);border-radius:8px;padding:6px 10px}
+.teamfield input.missing{border-color:var(--red);background:var(--red-s)}
+.teamhint{font-size:12px;color:var(--red);flex-basis:100%}
+.notewrap{display:grid;gap:6px}
+.notebtn{justify-self:start;border:1px dashed var(--line2);background:none;color:var(--dim);font:500 12.5px var(--font);padding:4px 10px;border-radius:8px;cursor:pointer}
+.notebtn:hover{color:var(--ink);border-color:var(--muted)}
+.notewrap textarea{width:100%;min-height:64px;resize:vertical;font:13.5px/1.5 var(--font);color:var(--ink);background:var(--card2);border:1px solid var(--line2);border-radius:10px;padding:9px 11px}
+.notewrap textarea:focus{border-color:var(--indigo);outline:none}
+.notewrap textarea::placeholder{color:var(--dim)}
+.notehint{font-size:12px;color:var(--dim)}
+.empty{padding:18px;color:var(--muted);font-size:13px}
+
+@media (max-width:1180px){ .g-top{grid-template-columns:1fr} .g-mid{grid-template-columns:1fr 1fr} .search{width:220px} }
+@media (max-width:900px){
+  body{padding:0} .app{grid-template-columns:1fr;border-radius:0;border:0}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line)}
+  .side .grow,.navlabel,.pagecard{display:none} .exportcard{flex-basis:100%}
+  .g-mid{grid-template-columns:1fr} .cmp{grid-template-columns:1fr} .search{width:100%;order:5}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Categories">
+    <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>handoff qa</div>
+    <nav id="nav" style="display:contents"></nav>
+    <div class="grow"></div>
+    <div class="pagecard"><small>Auditing</small><b id="pc-name"></b><a id="pc-url" target="_blank" rel="noopener"></a></div>
+    <div class="exportcard">
+      <b>Export for Claude</b>
+      <p><span id="note-count">0</span> marked items. Paste into the chat for the recheck or internal log.</p>
+      <button id="copy-notes" title="Copies statuses, teams and notes. Claude can't read this browser's storage.">Copy for Claude</button>
+      <span class="copied" id="notes-copied" aria-live="polite"></span>
+    </div>
+  </aside>
+  <div class="mainwrap">
+    <header class="topbar">
+      <div class="crumb" id="crumb"></div>
+      <span class="spacer"></span>
+      <label class="search"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Search findings…" aria-label="Search findings"><span class="kbd">/</span></label>
+      <div class="seg" role="group" aria-label="Filter by status" id="seg"></div>
+      <span class="copied" id="copied" aria-live="polite"></span>
+      <button class="btn" id="copy"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy open items</button>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+<datalist id="team-list"></datalist>
+
+<script>
+/* ===================== AUDIT DATA START =====================
+   Everything between START and END is per-audit data. The handoff-qa skill replaces this whole block.
+   Values are HTML strings: escape < > & in visible text (&lt; &gt; &amp;), and never write a literal closing script tag (use <\/script>).
+   The example below is mock data showing every field. */
+const PAGE = { name:"Home", slug:"home", url:"https://example-site.webflow.io/", scope:"main#main", date:"12 Nov 2026", pass:"Pass 1" };
+
+const AREAS = [
+  { key:"structure", label:"Structure" },
+  { key:"media", label:"Media" },
+  { key:"links", label:"Links" },
+  { key:"code", label:"Code Quality" },
+  { key:"a11y", label:"Accessibility" },
+  { key:"content", label:"Alt, ARIA &amp; Typos" },
+  { key:"lighthouse", label:"Lighthouse" },
+  { key:"axe", label:"axe DevTools" },
+];
+
+const PASSING = [
+  "<code>main#main</code> exists and wraps every section",
+  "Exactly one H1, inside <code>main</code>",
+  "Hero video play on scroll is off",
+  "All images sit in aspect-ratio containers",
+  "Social links have aria-labels and hidden SVGs",
+  "JS embeds are the last child of their section",
+  "No runtime console errors after load",
+  "No clipping or sideways scroll at 320px (400% zoom)",
+];
+
+const FINDINGS = [
+  { id:"heading-skip-features", area:"structure", rule:"Heading Structure", status:"fail",
+    title:"Heading level skipped (H2 → H4)", where:"Features section › <code>.features_card-title</code>",
+    expected:"Headings step down one level at a time inside <code>main</code>.",
+    found:"Section title is H2, card titles are H4.",
+    fix:"Change the card titles to H3." },
+  { id:"hero-img-priority", area:"media", rule:"Hero Image", status:"fail",
+    title:"Hero image is lazy-loaded with no fetch priority", where:"Hero section › <code>.hero_image</code>",
+    expected:"<code>fetchpriority=\"high\"</code> and <code>loading=\"eager\"</code>",
+    found:"<code>loading=\"lazy\"</code>, no fetchpriority",
+    fix:"Set the two attributes in the image settings." },
+  { id:"img-format-testimonials", area:"media", rule:"Images", status:"partial",
+    title:"3 testimonial avatars are JPG, not WebP", where:"Testimonials section › <code>.testimonial_avatar</code>",
+    expected:"Raster images in WebP at 2× the Figma size.",
+    found:"<code>avatar-1.jpg</code>, <code>avatar-2.jpg</code>, <code>avatar-3.jpg</code>. 2× size unverified (no Figma frame in context).",
+    fix:"Convert to WebP and re-upload at 2×." },
+  { id:"img-logo-srcset", area:"media", rule:"Images", status:"fail",
+    title:"Logo strip images are still responsive", where:"Logos section › <code>.logos_item img</code>",
+    expected:"Logos and icons have responsiveness disabled (no srcset).",
+    found:"Each logo ships a 5-size srcset.",
+    fix:"Disable responsive images on these assets." },
+  { id:"link-sr-default", area:"links", rule:"Links", status:"fail",
+    title:"Screen reader text is still \"Learn more about N4\"", where:"CTA section › Clickable component",
+    expected:"SR text that names the destination.",
+    found:"Button Text SR prop is on the default.",
+    fix:"Set it to something like \"Book a tour of the venue\"." },
+  { id:"link-overflow-parent", area:"links", rule:"Links", status:"fail",
+    title:"Clickable's parent has overflow: hidden", where:"Features section › <code>.features_card</code>",
+    expected:"The direct parent of a Clickable doesn't clip overflow.",
+    found:"<code>.features_card</code> has <code>overflow: hidden</code>, so the focus ring is cut off.",
+    fix:"Nest one wrapper div between the card and the Clickable." },
+  { id:"console-log-embed", area:"code", rule:"Console Logs", status:"fail",
+    title:"console.log left in the hero embed", where:"Hero section › JS embed",
+    found:"Logs <code>\"hero timeline ready\"</code> on every load.",
+    fix:"Remove the console.log line." },
+  { id:"embed-order-features", area:"code", rule:"Embed CSS and JS", status:"fail",
+    title:"CSS embed isn't the first child, and has an unused media query", where:"Features section",
+    expected:"CSS embed is the first child of the section, with no unused <code>@media</code> rules.",
+    found:"CSS embed sits after <code>.features_wrap</code>. <code>@media (max-width: 479px)</code> targets nothing.",
+    fix:"Move the embed to the top and remove the empty rule." },
+  { id:"component-design-mode", area:"code", rule:"Components", status:"fail",
+    title:"Hidden hero item has no Designer override", where:"Hero section › <code>.hero_item</code>",
+    expected:"Every animation hide has a <code>.wf-design-mode</code> override.",
+    found:"<code>.hero_item { opacity: 0 }</code> with no override, so the canvas looks blank.",
+    fix:"Add <code>.wf-design-mode .hero_item { opacity: 1; }</code>." },
+  { id:"a11y-large-text", area:"a11y", rule:"400% zoom and large text", status:"manual",
+    title:"Large browser text size not checked", where:"<code>main</code>",
+    found:"The 320px pass showed no clipping or sideways scroll. Text size can't be set from automation.",
+    fix:"Set the browser text size to Large and scroll through the page." },
+  { id:"lh-cls-hero", area:"lighthouse", rule:"Lighthouse", status:"fail",
+    lh:{ cat:"performance", audit:"cls-culprits-insight", display:"CLS 0.14", r:"avg", help:"https://developer.chrome.com/docs/lighthouse/performance/cumulative-layout-shift" },
+    title:"Layout shift from the unsized hero video placeholder", where:"Hero section › <code>.hero_video</code>",
+    expected:"CLS under 0.1.",
+    found:"CLS 0.14, caused by the placeholder loading without a size.",
+    fix:"Wrap the placeholder in an aspect-ratio container." },
+  { id:"alt-missing-team", area:"content", rule:"Alt text", status:"fail",
+    title:"Team photo has no alt", where:"About section › <code>.about_image</code>",
+    found:"No <code>alt</code> attribute.",
+    fix:"Describe the photo, or set <code>alt=\"\"</code> if it's decorative." },
+  { id:"alt-filename-feature", area:"content", rule:"Alt text", status:"fail",
+    title:"Filename used as alt", where:"Features section › <code>.features_card img</code>",
+    found:"<code>alt=\"feature-02-final.webp\"</code>",
+    fix:"Replace it with a description of the image." },
+  { id:"aria-slider-next", area:"content", rule:"Aria-label", status:"fail",
+    title:"Icon-only slider button has no accessible name", where:"Testimonials section › <code>.slider_next</code>",
+    fix:"Add <code>aria-label=\"Next testimonial\"</code> and <code>aria-hidden=\"true\"</code> on the svg." },
+  { id:"typo-cta-heading", area:"content", rule:"Typo", status:"fail",
+    title:"\"Recieve updates\"", where:"CTA section › <code>h2</code>",
+    expected:"Receive updates", found:"Recieve updates",
+    fix:"Correct the spelling." },
+  { id:"typo-placeholder", area:"content", rule:"Typo", status:"fail",
+    title:"Placeholder copy left in", where:"About section › <code>.about_paragraph</code>",
+    found:"\"TODO swap copy\"",
+    fix:"Replace it with the final copy from Figma." },
+  { id:"lh-lcp-lazy", area:"lighthouse", rule:"Lighthouse", status:"fail",
+    lh:{ cat:"performance", audit:"lcp-discovery-insight", display:"LCP 2.9 s", r:"avg", help:"https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint" },
+    title:"LCP image was lazily loaded", where:"Hero section › <code>.hero_image</code>",
+    expected:"The LCP image is discoverable in the HTML and loads eagerly with high priority.",
+    found:"LCP element is <code>.hero_image</code>, requested 1.1 s late because of <code>loading=\"lazy\"</code>.",
+    fix:"Same fix as the Hero Image row in Media. Re-run Lighthouse after it's done." },
+  { id:"lh-render-blocking", area:"lighthouse", rule:"Lighthouse", status:"fail",
+    lh:{ cat:"performance", audit:"render-blocking-insight", display:"Est. savings 320 ms", r:"avg", help:"https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources" },
+    title:"Render-blocking requests delay the first paint", where:"Page <code>&lt;head&gt;</code> › custom code",
+    found:"<code>ScrollTrigger.min.js</code> (180 ms) and the Google Fonts stylesheet (140 ms) block rendering.",
+    fix:"Add <code>defer</code> to the GSAP scripts and load fonts with <code>display=swap</code> plus a preconnect." },
+  { id:"lh-unsized-images", area:"lighthouse", rule:"Lighthouse", status:"partial",
+    lh:{ cat:"performance", audit:"unsized-images", display:"2 elements", r:"avg", help:"https://developer.chrome.com/docs/lighthouse/performance/unsized-images" },
+    title:"Image elements do not have explicit width and height", where:"Logos section › <code>.logos_item img</code>",
+    found:"Two SVG logos have no <code>width</code>/<code>height</code>. Their wrapper has a size, so the visible shift is small.",
+    fix:"Set width and height on the two logo images, or confirm the wrapper size and mark as False positive." },
+  { id:"lh-a11y-contrast", area:"lighthouse", rule:"Lighthouse", status:"fail", dup:"axe DevTools › color-contrast",
+    lh:{ cat:"accessibility", audit:"color-contrast", display:"3 elements", r:"bad", help:"https://developer.chrome.com/docs/lighthouse/accessibility/color-contrast" },
+    title:"Background and foreground colors do not have a sufficient contrast ratio", where:"Stats section › <code>.stats_label</code>",
+    found:"Lighthouse runs axe-core, so this is the same failure as the axe row.",
+    fix:"Fix it once in the axe DevTools tab. This row closes when that one does." },
+  { id:"lh-a11y-button-name", area:"lighthouse", rule:"Lighthouse", status:"fail", dup:"Alt, ARIA & Typos › slider button",
+    lh:{ cat:"accessibility", audit:"button-name", display:"1 element", r:"bad", help:"https://developer.chrome.com/docs/lighthouse/accessibility/button-name" },
+    title:"Buttons do not have an accessible name", where:"Testimonials section › <code>.slider_next</code>",
+    found:"Same element as the icon-only slider button row.",
+    fix:"Add the aria-label from the Aria-labels row." },
+];
+
+
+/* ---------- Lighthouse (Incognito / fresh profile). Set LH = null if it could not run. ---------- */
+const LH = {
+  version:"Lighthouse 12.2.1", preset:"Desktop", mode:"Incognito", ran:"12 Nov 2026 · 22:06",
+  cats:[ { key:"performance", label:"Performance", score:87 },
+         { key:"accessibility", label:"Accessibility", score:92 },
+         { key:"best-practices", label:"Best practices", score:100 } ],
+  metrics:[ { k:"FCP", label:"First Contentful Paint", v:"0.8 s", r:"good" },
+            { k:"LCP", label:"Largest Contentful Paint", v:"2.9 s", r:"avg" },
+            { k:"TBT", label:"Total Blocking Time", v:"40 ms", r:"good" },
+            { k:"CLS", label:"Cumulative Layout Shift", v:"0.14", r:"avg" },
+            { k:"SI",  label:"Speed Index", v:"1.4 s", r:"good" } ],
+  passed:{ performance:31, accessibility:24, "best-practices":17 },
+  insight:"Led by CLS from the unsized hero video placeholder. Fixing it should lift Performance into the 90s.",
+};
+
+/* ---------- axe DevTools (axe-core on main#main). Set AXE = null and AXE_FINDINGS = [] if it could not run.
+   result: "violation" = failed rule, "incomplete" = axe's "Needs review"
+   nodes:  one entry per affected element (CSS selector, HTML snippet, axe's failure summary) ---------- */
+const AXE = {
+  version:"axe-core 4.10.2", ran:"12 Nov 2026 · 22:04", scope:"main#main", standard:"WCAG 2.2 AA + best practices",
+  passes:41, inapplicable:38, droppedOutsideMain:3,
+};
+const AXE_FINDINGS = [
+  { id:"axe-color-contrast", rule:"color-contrast", impact:"serious", result:"violation", wcag:"1.4.3 AA",
+    title:"Elements must meet minimum color contrast ratio thresholds", where:"Stats section › <code>.stats_label</code>",
+    expected:"4.5:1 for normal text.", found:"3.1:1, <code>#8A8A8A</code> on <code>#FFFFFF</code>.",
+    fix:"Darken the label colour to at least <code>#767676</code>.",
+    nodes:[
+      { target:".stats_item:nth-child(1) > .stats_label", html:'<div class="stats_label">Events a year</div>', summary:"Element has insufficient color contrast of 3.1 (foreground #8a8a8a, background #ffffff, 14px normal). Expected 4.5:1." },
+      { target:".stats_item:nth-child(2) > .stats_label", html:'<div class="stats_label">Square metres</div>', summary:"Element has insufficient color contrast of 3.1 (foreground #8a8a8a, background #ffffff, 14px normal). Expected 4.5:1." },
+      { target:".stats_item:nth-child(3) > .stats_label", html:'<div class="stats_label">Visitors</div>', summary:"Element has insufficient color contrast of 3.1 (foreground #8a8a8a, background #ffffff, 14px normal). Expected 4.5:1." },
+    ] },
+  { id:"axe-list-children", rule:"list", impact:"serious", result:"violation", wcag:"1.3.1 A",
+    title:"&lt;ul&gt; and &lt;ol&gt; must only directly contain &lt;li&gt;, &lt;script&gt; or &lt;template&gt;", where:"Features section › <code>.features_list</code>",
+    expected:"A <code>&lt;ul&gt;</code> only contains <code>&lt;li&gt;</code> children.", found:"The Collection List wrapper puts a <code>div.w-dyn-items</code> inside a custom <code>ul</code> tag.",
+    fix:"Set the list tag on the Collection List itself, not on an outer div.",
+    nodes:[
+      { target:"ul.features_list", html:'<ul class="features_list"><div role="list" class="w-dyn-items">…</div></ul>', summary:"List element has direct children that are not allowed: div" },
+    ] },
+  { id:"axe-aria-hidden-focus", rule:"aria-hidden-focus", impact:"serious", result:"violation", wcag:"4.1.2 A",
+    title:"ARIA hidden element must not be focusable or contain focusable elements", where:"Logos section › <code>.logos_track</code> (duplicated marquee)",
+    found:"The cloned marquee track is <code>aria-hidden=\"true\"</code> but its logo links can still receive focus.",
+    fix:"Add <code>tabindex=\"-1\"</code> to the links in the cloned track, or render the clone without links.",
+    nodes:[
+      { target:".logos_track[aria-hidden=\"true\"] > a:nth-child(1)", html:'<a href="/partners/acme" class="logos_item">…</a>', summary:"Focusable content should have tabindex=\"-1\" or be removed from the DOM" },
+      { target:".logos_track[aria-hidden=\"true\"] > a:nth-child(2)", html:'<a href="/partners/northwind" class="logos_item">…</a>', summary:"Focusable content should have tabindex=\"-1\" or be removed from the DOM" },
+    ] },
+  { id:"axe-heading-order", rule:"heading-order", impact:"moderate", result:"violation", wcag:"Best practice",
+    title:"Heading levels should only increase by one", where:"Features section › <code>.features_card-title</code>",
+    found:"Same issue as the Structure row: H4 directly under an H2.",
+    fix:"Change the card titles to H3. Fixing the Structure row fixes this too.",
+    nodes:[
+      { target:".features_card:nth-child(1) .features_card-title", html:'<h4 class="features_card-title">Flexible layouts</h4>', summary:"Heading order invalid" },
+    ] },
+  { id:"axe-review-hero-contrast", rule:"color-contrast", impact:"serious", result:"incomplete", wcag:"1.4.3 AA",
+    title:"Needs review: text contrast over the hero video", where:"Hero section › <code>.hero_subtitle</code>",
+    found:"axe couldn't compute the contrast because the text sits on a video. Check it by eye at the darkest and lightest frames.",
+    fix:"If it fails, add a dark overlay to <code>.hero_video-wrap</code> or a text shadow.",
+    nodes:[
+      { target:".hero_subtitle", html:'<p class="hero_subtitle">London\'s home of live events</p>', summary:"Element's background color could not be determined due to a background image or video" },
+    ] },
+];
+
+/* ---------- How to fix: expandable guidance per finding ----------
+   steps   = ordered steps, written for Webflow Designer
+   code    = optional snippet to paste or compare against
+   why     = one line on why the rule exists
+   ref     = optional docs link                                     */
+const HOWTO = {
+  "heading-skip-features": {
+    why:"Screen reader users jump between headings. A skipped level makes it look like a section is missing.",
+    steps:["Select a card title in the Navigator.", "In the Settings panel (D), change the tag from H4 to H3.", "If the title comes from a component, change the tag inside the component so every instance updates.", "Keep the visual size by leaving the class as is, or add a <code>u-text-style-*</code> utility."],
+  },
+  "hero-img-priority": {
+    why:"The hero image is usually the Largest Contentful Paint element. Lazy-loading it delays LCP.",
+    steps:["Select <code>.hero_image</code>.", "Settings panel › Image settings › Load: set to <b>Eager</b>.", "Under Custom attributes, add <code>fetchpriority</code> = <code>high</code>.", "Leave every other image on Lazy."],
+    code:'<img src="hero.webp" loading="eager" fetchpriority="high" alt="…">',
+    ref:{ label:"web.dev: Optimize LCP", url:"https://web.dev/articles/optimize-lcp" },
+  },
+  "img-format-testimonials": {
+    why:"WebP is roughly 25–35% smaller than JPG at the same quality.",
+    steps:["Export the avatars from Figma at 2× the frame size.", "Convert to WebP (Squoosh, or Webflow's Assets panel › Convert to WebP).", "Replace each image in the Assets panel so existing bindings keep working.", "If the avatars are CMS fields, re-upload them in the CMS items."],
+    ref:{ label:"Webflow: Convert images to WebP", url:"https://help.webflow.com/hc/en-us/articles/33961362040723" },
+  },
+  "img-logo-srcset": {
+    why:"Logos render small, so responsive variants only add requests and markup.",
+    steps:["Select a logo image.", "Settings panel › Image settings › turn <b>Responsive</b> off.", "Repeat for every logo, or once on the component image if the strip is a component."],
+  },
+  "link-sr-default": {
+    why:"\"Learn more about N4\" is the component default. Screen reader users hear it instead of where the link goes.",
+    steps:["Select the Clickable component instance in the CTA section.", "In the component props, find <b>Button Text SR</b>.", "Write the destination, e.g. \"Book a tour of the venue\".", "Check every other Clickable on the page for the same default."],
+  },
+  "link-overflow-parent": {
+    why:"<code>overflow: hidden</code> on the direct parent clips the focus outline, so keyboard users lose track of focus.",
+    steps:["Select the Clickable inside <code>.features_card</code>.", "Wrap it in a new div (Cmd/Ctrl + Enter on the selection, or drag a div around it).", "Give the wrapper a class such as <code>.features_card-link-wrap</code>, with no overflow set.", "Tab through the cards and confirm the focus ring is fully visible."],
+    code:'<div class="features_card"> <!-- overflow: hidden stays here -->\n  <div class="features_card-link-wrap">\n    <!-- Clickable -->\n  </div>\n</div>',
+  },
+  "console-log-embed": {
+    why:"Leftover logs clutter the client's console and can leak internal names.",
+    steps:["Open the Hero section's JS embed.", "Remove the <code>console.log(\"hero timeline ready\")</code> line.", "Publish to staging, open DevTools › Console, reload, and confirm it's clean."],
+  },
+  "embed-order-features": {
+    why:"A CSS embed that comes first applies before the section paints, which avoids a flash of unstyled content.",
+    steps:["In the Navigator, drag the CSS embed above <code>.features_wrap</code> so it's the first child.", "Open the embed and delete the empty <code>@media (max-width: 479px)</code> block.", "Confirm the JS embed is still the last child."],
+  },
+  "component-design-mode": {
+    why:"Webflow adds <code>wf-design-mode</code> to <code>html</code> in Designer. Without an override, the client sees an empty canvas.",
+    steps:["Open the CSS embed that hides <code>.hero_item</code>.", "Add the override directly below the hide rule.", "Also keep it visible for <code>prefers-reduced-motion: reduce</code>.", "Reload Designer and confirm the hero shows on the canvas."],
+    code:'.hero_item { opacity: 0; }\n.wf-design-mode .hero_item { opacity: 1; }\n@media (prefers-reduced-motion: reduce) {\n  .hero_item { opacity: 1; }\n}',
+  },
+  "a11y-large-text": {
+    why:"Some users raise the browser's default font size instead of zooming. Fixed heights and px fonts break there.",
+    steps:["Chrome: Settings › Appearance › Font size › <b>Large</b> (or Very large).", "Reload the staging page and scroll through <code>main</code>.", "Look for clipped text, overlapping elements, and buttons whose labels overflow.", "Reset the font size when you're done."],
+  },
+  "axe-color-contrast": {
+    why:"WCAG 1.4.3 needs 4.5:1 for normal text and 3:1 for large text (24px, or 18.66px bold).",
+    steps:["Select <code>.stats_label</code> and open its colour in the Style panel.", "Swap to a darker swatch from the site's variables. <code>#767676</code> is the lightest grey that passes on white.", "If the colour is a variable, check the other places it's used before changing it globally.", "Re-run axe on <code>main</code> to confirm."],
+    ref:{ label:"WebAIM contrast checker", url:"https://webaim.org/resources/contrastchecker/" },
+  },
+  "axe-aria-hidden-focus": {
+    why:"Keyboard users can tab into content that screen readers say isn't there, so focus lands on something silent.",
+    steps:["Find where the marquee clones <code>.logos_track</code> (usually the section's JS embed).", "After cloning, set <code>tabindex=\"-1\"</code> on every link in the clone.", "Or clone the logos as plain images without links.", "Tab through the section and confirm focus only visits the first track."],
+    code:"clone.querySelectorAll('a, button').forEach(el => el.setAttribute('tabindex', '-1'));",
+  },
+  "axe-heading-order": {
+    why:"Same cause as the Structure row. axe reports it separately.",
+    steps:["Fix the <b>Heading level skipped</b> row in Structure.", "Then close this one as <b>Fixed</b> after re-running axe."],
+  },
+  "axe-review-hero-contrast": {
+    why:"axe can't read pixels from a video, so it flags the text for a human to check.",
+    steps:["Pause the hero video on its lightest frame.", "Use the browser's colour picker or the WebAIM checker on the text and the background behind it.", "If it's under 4.5:1, add an overlay: a div with a dark background at 30–50% opacity between the video and the text.", "Set the status to <b>Fixed</b>, or <b>False positive</b> if it already passes."],
+    ref:{ label:"WebAIM contrast checker", url:"https://webaim.org/resources/contrastchecker/" },
+  },
+  "axe-list-children": {
+    why:"Screen readers announce \"list, 3 items\". Non-<code>li</code> children break that count and the navigation between items.",
+    steps:["Select the Collection List (<code>.w-dyn-items</code>), not its outer wrapper.", "Settings panel › set its tag to <b>List</b> so items render as <code>li</code>.", "Remove the custom <code>ul</code> tag from the outer div."],
+  },
+  "lh-lcp-lazy": {
+    why:"Lazy-loading tells the browser to wait until layout to fetch the image, which pushes LCP back.",
+    steps:["Fix the <b>Hero image is lazy-loaded</b> row in Media (Load: Eager, fetchpriority high).", "Publish to staging and re-run Lighthouse in Incognito.", "Check the LCP element is still <code>.hero_image</code> and LCP is under 2.5 s."],
+  },
+  "lh-render-blocking": {
+    why:"Scripts and stylesheets in the head without defer stop the browser painting anything until they load.",
+    steps:["Site settings › Custom code › Head: add <code>defer</code> to each GSAP <code>&lt;script&gt;</code>.", "Or move the scripts to Before &lt;/body&gt;.", "Add a preconnect for fonts.gstatic.com, and make sure the font URL ends with <code>&amp;display=swap</code>.", "Re-run Lighthouse and check the audit's savings drop under 100 ms."],
+    code:'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"><\/script>\n<script defer src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"><\/script>',
+    ref:{ label:"web.dev: Render-blocking resources", url:"https://web.dev/articles/render-blocking-resources" },
+  },
+  "lh-unsized-images": {
+    why:"Without width and height the browser can't reserve space, so content can jump when the image loads.",
+    steps:["Select each logo image and set width and height in the Style panel, or add <code>width</code>/<code>height</code> attributes.", "If the wrapper already has a fixed size and nothing shifts, set the status to <b>False positive</b>."],
+  },
+  "lh-a11y-contrast": {
+    why:"Lighthouse's accessibility score is built on axe-core, so it repeats axe violations.",
+    steps:["Fix the <b>color-contrast</b> row in the axe DevTools tab.", "Set this row to <b>Fixed</b> once Lighthouse re-runs clean."],
+  },
+  "lh-a11y-button-name": {
+    why:"Same element and rule as the slider button row.",
+    steps:["Fix the <b>Icon-only slider button</b> row in Alt, ARIA &amp; Typos.", "Set this row to <b>Fixed</b> after the re-run."],
+  },
+  "lh-cls-hero": {
+    why:"Without a size, the placeholder takes up no space until it loads, then pushes the content down.",
+    steps:["Wrap <code>.hero_video</code> in a div with an aspect ratio that matches the video (e.g. 16 / 9).", "Set the placeholder image and the video to absolute, 100% width and height, <code>object-fit: cover</code>.", "Re-run Lighthouse in Incognito and check CLS is under 0.1."],
+    code:'.hero_video-wrap { position: relative; aspect-ratio: 16 / 9; }\n.hero_video-wrap > * { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }',
+    ref:{ label:"web.dev: Optimize CLS", url:"https://web.dev/articles/optimize-cls" },
+  },
+  "alt-missing-team": {
+    why:"Without an alt, screen readers read the filename or skip the image with no context.",
+    steps:["Select <code>.about_image</code>.", "Settings panel › Alt text: describe what the photo shows, e.g. \"The team in the studio\".", "If the image is purely decorative, choose <b>Decorative</b> instead, which outputs <code>alt=\"\"</code>.", "For CMS images, set the alt in the Assets panel or bind it to a CMS field."],
+  },
+  "alt-filename-feature": {
+    why:"Webflow falls back to the filename when no alt is set on the asset.",
+    steps:["Open the Assets panel, find <code>feature-02-final.webp</code>, and set its alt text there.", "Or select the image and override the alt in Settings.", "Check the other feature images for the same fallback."],
+  },
+  "aria-slider-next": {
+    why:"An icon-only button announces as \"button\" with no name, so users can't tell what it does.",
+    steps:["Select <code>.slider_next</code>.", "Settings › Custom attributes: add <code>aria-label</code> = <code>Next testimonial</code>.", "Select the svg inside and add <code>aria-hidden</code> = <code>true</code>.", "Do the same for the previous button."],
+    code:'<button class="slider_next" aria-label="Next testimonial">\n  <svg aria-hidden="true" …></svg>\n</button>',
+  },
+  "typo-cta-heading": {
+    steps:["Double-click the CTA heading and correct \"Recieve\" to \"Receive\".", "If it's a component prop or CMS field, fix it at the source."],
+  },
+  "typo-placeholder": {
+    steps:["Get the final paragraph copy from the Figma file.", "Replace the \"TODO swap copy\" text.", "If there's no final copy yet, set the status to <b>Pending client</b>."],
+  },
+};
+
+/* ====================== AUDIT DATA END ====================== */
+
+/* axe rows become findings in the axe tab */
+AXE_FINDINGS.forEach(f => FINDINGS.push({
+  ...f, area:"axe", status: f.result === "incomplete" ? "manual" : "fail",
+  rule: f.result === "incomplete" ? "Needs review" : "axe DevTools",
+  axe:{ rule:f.rule, impact:f.impact, result:f.result, wcag:f.wcag, nodes:f.nodes, help:`https://dequeuniversity.com/rules/axe/4.10/${f.rule}` },
+}));
+document.title = `Handoff QA — ${PAGE.name}`;
+
+/* ---------- Statuses ----------
+   bucket "open"    = still on me
+   bucket "pending" = waiting on someone else (goes to the internal log as PENDING)
+   bucket "closed"  = fixed, or dismissed with a reason                              */
+const STATUSES = [
+  { key:"open",           label:"Open",                    bucket:"open" },
+  { key:"fixed",          label:"Fixed",                   bucket:"closed" },
+  { key:"not_error",      label:"This is not an error",    bucket:"closed" },
+  { key:"false_positive", label:"False positive",          bucket:"closed" },
+  { key:"intentional",    label:"Intentional / won't fix", bucket:"closed" },
+  { key:"pending_client", label:"Pending client",          bucket:"pending" },
+  { key:"not_mine",       label:"Not my responsibility",   bucket:"pending", needsTeam:true },
+  { key:"discuss",        label:"Needs discussion",        bucket:"pending" },
+];
+const ST = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+const TEAMS = ["Development", "Design", "Content / Copy", "SEO", "Backend", "Project management"];
+
+/* ---------- State (localStorage) ---------- */
+const LS = `handoff-qa-${PAGE.slug}`;
+const load = (k, d) => { try{ return JSON.parse(localStorage.getItem(`${LS}-${k}`)) ?? d; }catch(e){ return d; } };
+const store = (k, v) => { try{ localStorage.setItem(`${LS}-${k}`, JSON.stringify(v)); }catch(e){} };
+let status = load("status", {}), team = load("team", {}), notes = load("notes", {}), collapsed = load("collapsed", {}), ignored = load("ignored", {});
+let filter = "all", q = "", focusTeam = null;
+const openNotes = new Set(), openHow = new Set(), openNodes = new Set();
+
+const SEV = { fail:"Fail", partial:"Partial", manual:"Manual" };
+const SEVC = { fail:"red", partial:"amber", manual:"indigo" };
+const TOOLS = ["lighthouse", "axe"];
+const LHC = { good:"green", avg:"amber", bad:"red" };
+const scoreC = v => v>=90 ? "green" : v>=50 ? "amber" : "red";
+const IMPC = { critical:"red", serious:"red", moderate:"amber", minor:"indigo" };
+const P = {
+  overview:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  structure:'<path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  media:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+  links:'<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+  code:'<path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/>',
+  a11y:'<circle cx="12" cy="4.5" r="1.6"/><path d="M5 8.5l7 1.5 7-1.5"/><path d="M12 10v4l-3 6"/><path d="m12 14 3 6"/>',
+  perf:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="m12 14 4-5"/>',
+  content:'<path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/>',
+  axe:'<path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/>',
+  check:'<path d="m5 12 5 5 9-10"/>',
+  eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4.5 10 7a12 12 0 0 1-2.6 3.6M6.2 6.3C3.9 7.7 2.5 9.9 2 12c1 2.5 5 7 10 7a9.6 9.6 0 0 0 4.4-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+  lighthouse:'<path d="M10 3h4l1 4H9l1-4z"/><path d="M9 7 7.5 21h9L15 7"/><path d="M8.4 13h7.2"/><path d="M4 6l2 1M20 6l-2 1"/>',
+  pin:'<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>',
+  spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
+};
+const icon = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${P[k]||""}</svg>`;
+const CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const dots = c => `<svg viewBox="0 0 24 24" aria-hidden="true" style="color:var(--${c})">${[...Array(8)].map((_,n)=>{const a=n*Math.PI/4;return `<circle cx="${12+8*Math.cos(a)}" cy="${12+8*Math.sin(a)}" r="1.7" fill="currentColor" opacity="${.25+n*.1}"/>`;}).join("")}</svg>`;
+
+const st = i => ST[status[i.id]] || (i.verified ? ST.fixed : ST.open);  /* verified = confirmed fixed on a recheck; kept on the list as a record */
+const bucket = i => st(i).bucket;
+const inArea = k => FINDINGS.filter(f => f.area === k);
+const stats = all => {
+  const list = all.filter(i => !ignored[i.id]), ig = all.length - list.length;
+  const t = list.length, c = list.filter(i => bucket(i)==="closed").length, p = list.filter(i => bucket(i)==="pending").length;
+  return { t, c, p, ig, o: t-c-p, pct: t ? Math.round(c/t*100) : 100 };
+};
+const strip = h => h.replace(/<[^>]+>/g,"").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&").replace(/&quot;/g,'"');
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const exportCount = () => FINDINGS.filter(i => !ignored[i.id]).filter(i => (status[i.id] && status[i.id] !== "open") || (notes[i.id]||"").trim()).length;
+const updateNoteCount = () => { document.getElementById("note-count").textContent = exportCount(); };
+const tag = (c, t, extra="") => `<span class="tag ${c} ${extra}">${t}</span>`;
+const matchQ = i => !q || strip([i.title, i.where, i.rule, i.fix, i.found, i.expected, i.axe?.rule, i.lh?.audit].filter(Boolean).join(" ")).toLowerCase().includes(q);
+const passF = i => matchQ(i) && (filter==="ignored" ? !!ignored[i.id] : ignored[i.id] ? filter==="all" : (filter==="all" || bucket(i)===filter));
+const isOpen = i => !ignored[i.id] && bucket(i)==="open";
+const visibleAreas = AREAS.filter(a => inArea(a.key).length);
+const view = document.getElementById("view");
+
+/* segmented meter: n bars, filled by closed (green) then pending (indigo) */
+function segm(n, cFrac, pFrac=0, cls="c"){
+  const c = Math.round((cFrac||0)*n), p = Math.min(n-c, Math.round((pFrac||0)*n));
+  return `<span class="segm" aria-hidden="true">${[...Array(n)].map((_,k)=>`<i class="${k<c?cls:k<c+p?"p":""}"></i>`).join("")}</span>`;
+}
+/* half-circle gauge of pill segments */
+function gauge(s, N = 25, R = 112, cls = "c"){
+  const c = Math.round(s.c/s.t*N), p = Math.round((s.p||0)/s.t*N);
+  return [...Array(N)].map((_,k)=>{
+    const a = -90 + k*(180/(N-1));
+    return `<span class="s ${k<c?cls:k<c+p?"p":""}" style="transform:translateX(-50%) rotate(${a}deg) translateY(-${R}px)"></span>`;
+  }).join("");
+}
+
+/* ---------- sidebar + top bar ---------- */
+function renderChrome(active){
+  const all = stats(FINDINGS);
+  const badge = s => !s.t && s.ig ? `<span class="nb dim">Ignored</span>` : s.o ? `<span class="nb red">${s.o}</span>` : s.p ? `<span class="nb indigo">${s.p}</span>` : `<span class="nb green">Clear</span>`;
+  document.getElementById("nav").innerHTML =
+    `<button class="navitem" data-go="all" ${active==="all"?'aria-current="page"':""}>${icon("overview")}<span class="lbl">Overview</span>${badge(all)}</button>
+     <div class="navlabel">Checklist</div>` +
+    visibleAreas.filter(a=>!TOOLS.includes(a.key)).map(a => `<button class="navitem" data-go="${a.key}" ${active===a.key?'aria-current="page"':""}>${icon(a.key)}<span class="lbl">${a.label}</span>${badge(stats(inArea(a.key)))}</button>`).join("") +
+    `<div class="navlabel">Tools</div>` +
+    TOOLS.map(k=>visibleAreas.find(a=>a.key===k)).filter(Boolean).map(a => `<button class="navitem" data-go="${a.key}" ${active===a.key?'aria-current="page"':""}>${icon(a.key)}<span class="lbl">${a.label}</span>${badge(stats(inArea(a.key)))}</button>`).join("");
+  document.querySelectorAll("#nav [data-go]").forEach(b => b.addEventListener("click", () => { location.hash = b.dataset.go; }));
+
+  const area = AREAS.find(a => a.key===active);
+  document.getElementById("crumb").innerHTML = `${icon(area?area.key:"overview")}<span class="muted">${PAGE.name}</span><span class="sep">/</span>${area?area.label:"Overview"}`;
+
+  const scope = area ? inArea(area.key) : FINDINGS, s = stats(scope);
+  const b = (k, label, n) => `<button data-f="${k}" aria-pressed="${filter===k}">${label}<span>${n}</span></button>`;
+  const seg = document.getElementById("seg");
+  seg.innerHTML = b("all","All",s.t) + b("open","Open",s.o) + b("pending","Pending",s.p) + b("closed","Closed",s.c) + b("ignored","Ignored",s.ig);
+  seg.querySelectorAll("button").forEach(x => x.addEventListener("click", () => { filter = x.dataset.f; render(active); }));
+}
+
+/* ---------- overview cards ---------- */
+function healthCard(){
+  const s = stats(FINDINGS);
+  return `<section class="card health">
+    <header class="chead"><h3>QA health</h3><span class="spacer"></span><span class="chip">${PAGE.pass}</span></header>
+    <div class="hstats">
+      <div><span class="hval">${dots("red")}${s.o}</span><small>Open</small></div>
+      <div><span class="hval">${dots("indigo")}${s.p}</span><small>Pending</small></div>
+      <div><span class="hval">${dots("green")}${s.c}</span><small>Closed</small></div>
+    </div>
+    <div class="gauge" role="img" aria-label="${s.pct}% of findings closed, ${s.p} pending">${gauge(s)}
+      <div class="gcenter"><b>${s.pct}<span>%</span></b><small>closed of ${s.t} findings</small></div>
+      <span class="g0">0</span><span class="g100">${s.t}</span>
+    </div>
+    <dl class="kv">
+      <div><dt>Scope</dt><dd><code>${PAGE.scope}</code></dd></div>
+      <div><dt>Audited</dt><dd>${PAGE.date}</dd></div>
+      <div><dt>Lighthouse</dt><dd>${LH ? `${LH.mode}, ${LH.preset.toLowerCase()}` : "Not run"}</dd></div>
+      <div><dt>axe</dt><dd>${AXE ? AXE.version.replace("axe-core ","") : "Not run"}</dd></div>
+      <div><dt>Passing</dt><dd>${PASSING.length} rows</dd></div>
+      <div><dt>Nav/footer</dt><dd>Excluded</dd></div>
+    </dl>
+  </section>`;
+}
+function stateTag(s, list){
+  if(!s.t && s.ig) return tag("plain","Ignored");
+  if(list.some(i => i.status==="fail" && isOpen(i))) return tag("red","Failing");
+  if(s.o) return tag("amber","Check");
+  if(s.p) return tag("indigo","Pending");
+  return tag("green","Clear");
+}
+function categoryCard(){
+  return `<section class="card">
+    <header class="chead"><h3>Categories</h3><span class="spacer"></span><span class="muted small">${visibleAreas.length} with findings</span></header>
+    <div class="tblwrap"><table class="tbl">
+      <thead><tr><th>Category</th><th>Open</th><th>Pending</th><th>Progress</th><th>State</th></tr></thead>
+      <tbody>${visibleAreas.map(a => {
+        const list = inArea(a.key), s = stats(list);
+        return `<tr data-go="${a.key}" tabindex="0"><td><span class="cname"><span class="ticon">${icon(a.key)}</span>${a.label}</span></td>
+          <td class="num ${s.o?"hot":""}">${s.o}</td><td class="num">${s.p}</td>
+          <td><span class="prog">${segm(10, s.c/s.t, s.p/s.t)}<span class="pct">${s.pct}%</span></span></td>
+          <td>${stateTag(s, list)}</td></tr>`;
+      }).join("")}</tbody>
+    </table></div>
+  </section>`;
+}
+function axeCard(withLink=true){
+  const list = inArea("axe").filter(f => f.axe), v = list.filter(f => f.axe.result==="violation"), rv = list.filter(f => f.axe.result==="incomplete");
+  const n = arr => arr.reduce((t,f)=>t+f.axe.nodes.length,0), total = n(v) || 1;
+  const row = (k, label) => { const r = v.filter(f=>f.axe.impact===k), c = n(r);
+    return `<div class="mrow"><span class="nm"><span class="dot ${c?IMPC[k]:"dim"}"></span>${label}</span>${segm(18, c/total, 0, IMPC[k]==="red"?"r":IMPC[k]==="amber"?"a":"p")}<b>${c}</b></div>`; };
+  return `<section class="card">
+    <header class="chead"><h3>${icon("axe")}axe DevTools</h3><span class="spacer"></span>${withLink?`<button class="btn" data-go="axe">View issues</button>`:`<span class="chip">${AXE.version}</span>`}</header>
+    <div class="bignum"><b>${n(v)}</b><span>issues across ${v.length} rules<br>${n(rv)} needs review</span></div>
+    <div class="rows">${row("critical","Critical")}${row("serious","Serious")}${row("moderate","Moderate")}${row("minor","Minor")}</div>
+    <div class="cfoot">${AXE.standard} · ${AXE.passes} rules passed · ${AXE.inapplicable} n/a · ${AXE.droppedOutsideMain} in nav/footer left out${withLink?"":` · ran ${AXE.ran}`}</div>
+  </section>`;
+}
+function lighthouseCard(){
+  const row = (label, v) => `<div class="mrow"><span class="nm">${label}</span>${segm(18, v/100, 0, v>=90?"c":v>=50?"a":"r")}<b style="color:var(--${v>=90?"green":v>=50?"amber":"red"})">${v}</b></div>`;
+  const perfOpen = inArea("lighthouse").filter(i => i.lh?.cat==="performance" && isOpen(i)).length;
+  return `<section class="card">
+    <header class="chead"><h3>${icon("lighthouse")}Lighthouse</h3><span class="spacer"></span><button class="btn" data-go="lighthouse">View audits</button></header>
+    <div class="rows">${LH.cats.map(c => row(c.label, c.score)).join("")}</div>
+    <div class="insight"><b>${icon("spark")}What's holding the score</b>${perfOpen ? `${perfOpen} open performance audit${perfOpen===1?"":"s"}. ${LH.insight||""}` : `No open performance audits inside <code>main</code>.`}</div>
+  </section>`;
+}
+function passingCard(){
+  return `<section class="card">
+    <header class="chead"><h3>${icon("check")}Already passing</h3><span class="spacer"></span><span class="chip">${PASSING.length}</span></header>
+    <ul class="passlist">${PASSING.map(p => `<li>${icon("check")}<span>${p}</span></li>`).join("")}</ul>
+  </section>`;
+}
+
+/* ---------- findings ---------- */
+function statusHTML(i){
+  const s = st(i), t = team[i.id] || "";
+  const opts = b => STATUSES.filter(x=>x.bucket===b).map(x=>`<option value="${x.key}" ${x.key===s.key?"selected":""}>${x.label}</option>`).join("");
+  return `<div class="statusrow">
+    <label for="st-${i.id}">Status</label>
+    <select class="select ${s.bucket}" id="st-${i.id}" data-status="${i.id}">
+      <optgroup label="Open">${opts("open")}</optgroup><optgroup label="Closed">${opts("closed")}</optgroup><optgroup label="Pending">${opts("pending")}</optgroup>
+    </select>
+    ${s.needsTeam ? `<div class="teamfield"><label for="team-${i.id}">Responsible team</label>
+      <input id="team-${i.id}" data-team="${i.id}" list="team-list" value="${esc(t)}" placeholder="Pick or type a team" class="${t.trim()?"":"missing"}" autocomplete="off"></div>
+      ${t.trim()?"":`<span class="teamhint">Name a team so the internal log can assign this PENDING item.</span>`}` : ""}
+    <span class="grow"></span>${ignBtn([i.id], "Ignore")}
+  </div>`;
+}
+function noteHTML(i){
+  const val = notes[i.id] || "", open = openNotes.has(i.id) || !!val.trim();
+  return `<div class="notewrap">
+    <button type="button" class="notebtn" ${open?"hidden":""}>+ Add note</button>
+    <label class="notehint" for="note-${i.id}" ${open?"":"hidden"}>Context for the recheck or the internal log. Saved automatically.</label>
+    <textarea id="note-${i.id}" data-note="${i.id}" placeholder="e.g. Fixed in Designer, please re-check / client sending final copy Friday / dev owns the slider script" ${open?"":"hidden"}>${esc(val)}</textarea>
+  </div>`;
+}
+function panelsHTML(i){
+  const h = HOWTO[i.id], btns = [], panels = [];
+  if(i.axe){
+    const n = i.axe.nodes, o = openNodes.has(i.id);
+    btns.push(`<button type="button" class="xbtn" data-toggle="nodes" data-id="${i.id}" aria-expanded="${o}" aria-controls="nodes-${i.id}">${CHEV}${n.length} affected element${n.length===1?"":"s"}</button>`);
+    panels.push(`<div class="panel" id="nodes-${i.id}" ${o?"":"hidden"}><ol class="nodes">${n.map(x=>`<li><code>${esc(x.target)}</code><pre><code>${esc(x.html)}</code></pre><span class="summary">${esc(x.summary)}</span></li>`).join("")}</ol></div>`);
+  }
+  if(h){
+    const o = openHow.has(i.id), refs = [h.ref, i.axe && { label:`axe rule: ${i.axe.rule}`, url:i.axe.help }, i.lh && { label:`Lighthouse audit: ${i.lh.audit}`, url:i.lh.help }].filter(Boolean);
+    btns.push(`<button type="button" class="xbtn" data-toggle="how" data-id="${i.id}" aria-expanded="${o}" aria-controls="how-${i.id}">${CHEV}How to fix</button>`);
+    panels.push(`<div class="panel" id="how-${i.id}" ${o?"":"hidden"}>
+      ${h.why?`<div class="why"><b>Why</b>${h.why}</div>`:""}
+      <ol>${h.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+      ${h.code?`<pre><code>${esc(h.code)}</code></pre>`:""}
+      ${refs.length?`<div class="refs">${refs.map(r=>`<a href="${r.url}" target="_blank" rel="noopener">${r.label} ↗</a>`).join("")}</div>`:""}
+    </div>`);
+  }
+  return btns.length ? `<div class="actions">${btns.join("")}</div>${panels.join("")}` : "";
+}
+function resTag(i){
+  const s = st(i); if(s.key==="open") return "";
+  return s.bucket==="pending" ? tag("indigo", esc(s.needsTeam ? `Pending · ${team[i.id]?.trim() || "team not set"}` : s.label), "res") : tag("green", s.label, "res");
+}
+const ignBtn = (ids, label, restore=false) => `<button type="button" class="${restore?"btn":"btn ghost"} ignbtn" data-ign="${ids.join(",")}" data-mode="${restore?"restore":"ignore"}" title="${restore?"Bring back into counts and the export":"Leave out of counts and the internal log export"}">${icon(restore?"undo":"eyeoff")}${label}</button>`;
+function ignoredHTML(i){
+  return `<article class="finding is-ignored" data-id="${i.id}"><span></span>
+    <div class="fmain"><div class="fhead"><span class="ftitle">${i.title}</span>
+      <div class="tags">${tag("plain","Ignored")}${tag(SEVC[i.status], SEV[i.status])}${i.lh?tag("plain mono", i.lh.audit):i.axe?tag("plain mono", i.axe.rule):""}</div>
+      <span class="grow"></span>${ignBtn([i.id], "Restore", true)}</div>
+      <div class="where">${icon("pin")}<span>${i.where||""}</span></div></div>
+  </article>`;
+}
+function itemHTML(i){
+  if(ignored[i.id]) return ignoredHTML(i);
+  const cmp = (i.expected || i.found) ? `<div class="cmp">${i.expected?`<div><b>Expected</b>${i.expected}</div>`:""}${i.found?`<div><b>Found</b>${i.found}</div>`:""}</div>` : "";
+  return `<article class="finding sev-${i.status} is-${bucket(i)}" data-id="${i.id}">
+    <input type="checkbox" class="cb" id="cb-${i.id}" ${st(i).key==="fixed"?"checked":""} aria-label="Mark as fixed">
+    <div class="fmain">
+      <div class="fhead"><label class="ftitle" for="cb-${i.id}">${i.title}</label>
+        <div class="tags">${i.verified ? tag("green", "Verified "+i.verified) : ""}${tag(SEVC[i.status], SEV[i.status])}
+          ${i.axe ? tag(IMPC[i.axe.impact], i.axe.impact[0].toUpperCase()+i.axe.impact.slice(1)) + tag("plain mono", i.axe.rule) + tag("plain", i.axe.wcag) : ""}
+          ${i.lh ? tag("plain mono", i.lh.audit) + tag(LHC[i.lh.r], i.lh.display) : ""}
+          ${(!i.axe && !i.lh) || i.axe?.result==="incomplete" ? tag("plain", i.rule) : ""}
+          ${i.dup ? tag("plain", `Same as ${i.dup}`) : ""}
+          ${resTag(i)}<span class="tag plain hasnote" ${notes[i.id]&&notes[i.id].trim()?"":"hidden"}>Note</span></div></div>
+      <div class="where">${icon("pin")}<span>${i.where||""}</span></div>
+      <div class="fbody">${cmp}${i.fix?`<div class="fix"><strong>Fix</strong><span>${i.fix}</span></div>`:""}${panelsHTML(i)}${statusHTML(i)}${noteHTML(i)}</div>
+    </div>
+  </article>`;
+}
+function findingsHTML(areas, single){
+  return areas.map(a => {
+    const list = inArea(a.key), s = stats(list), shown = list.filter(passF);
+    if(!shown.length && !single) return "";
+    const col = !!collapsed[a.key] && !single;
+    return `<section class="card fsec ${col?"collapsed":""}">
+      ${single ? "" : `<button class="fsec-head" data-area="${a.key}" aria-expanded="${!col}">
+        <span class="ticon">${icon(a.key)}</span><h3>${a.label}</h3>
+        ${s.o?tag("red",`${s.o} open`):""}${s.p?tag("indigo",`${s.p} pending`):""}${s.ig?tag("plain",`${s.ig} ignored`):""}
+        <span class="grow"></span>${s.t?`${segm(10, s.c/s.t, s.p/s.t)}<span class="pct">${s.c}/${s.t}</span>`:""}<span class="chev">${CHEV}</span></button>`}
+      <div class="flist" ${single?'style="border-top:0"':""}>${shown.length ? shown.map(itemHTML).join("") : `<div class="empty">Nothing matches this filter${q?" and search":""}.</div>`}</div>
+    </section>`;
+  }).join("");
+}
+
+/* ---------- lighthouse tab ---------- */
+function lighthouseDetailHTML(){
+  return `<div class="lhgrid">${LH.cats.map(c => {
+      const list = inArea("lighthouse").filter(i => i.lh?.cat===c.key), open = list.filter(isOpen).length;
+      return `<section class="card lhscore">
+        <div class="gauge" role="img" aria-label="${c.label} score ${c.score}">${gauge({ c:c.score, t:100 }, 19, 80, ({green:"c",amber:"a",red:"r"})[scoreC(c.score)])}
+          <div class="gcenter"><b style="color:var(--${scoreC(c.score)})">${c.score}</b></div></div>
+        <h3>${c.label}</h3><small>${list.length ? `${list.length} failed audit${list.length===1?"":"s"} · ${open} open` : "No failed audits"} · ${LH.passed[c.key]} passed</small>
+      </section>`;
+    }).join("")}</div>
+    <section class="card">
+      <header class="chead"><h3>${icon("perf")}Metrics</h3><span class="spacer"></span><span class="chip">${LH.version} · ${LH.preset} · ${LH.mode}</span></header>
+      <div class="vitals">${LH.metrics.map(m => `<div class="vital ${m.r}"><span class="k"><span class="dot ${LHC[m.r]}"></span>${m.k}</span><b>${m.v}</b><small>${m.label}</small></div>`).join("")}</div>
+      <div class="cfoot">Ran ${LH.ran} on <code>${PAGE.url.replace("https://","")}</code>. Only failed audits with a node inside <code>${PAGE.scope}</code> are listed.</div>
+    </section>`;
+}
+function lighthouseSectionsHTML(){
+  return LH.cats.map(c => {
+    const list = inArea("lighthouse").filter(i => i.lh?.cat===c.key), s = list.length ? stats(list) : null, shown = list.filter(passF);
+    const key = `lh-${c.key}`, col = !!collapsed[key];
+    return `<section class="card fsec ${col?"collapsed":""}">
+      <button class="fsec-head" data-area="${key}" aria-expanded="${!col}">
+        <span class="ticon">${icon(c.key==="performance"?"perf":c.key==="accessibility"?"a11y":"check")}</span><h3>${c.label}</h3>
+        <span class="scorebadge ${scoreC(c.score)}">${c.score}</span>
+        ${s&&s.o?tag("red",`${s.o} open`):""}${s&&s.p?tag("indigo",`${s.p} pending`):""}
+        ${s&&s.ig?tag("plain",`${s.ig} ignored`):""}
+        <span class="grow"></span>${s&&s.t?`${segm(10, s.c/s.t, s.p/s.t)}<span class="pct">${s.c}/${s.t}</span>`:""}<span class="chev">${CHEV}</span></button>
+      <div class="flist">${list.length ? `<div class="sectool"><span>${s.t ? `Ignoring leaves these ${c.label} audits out of the counts and the internal log.` : `All ${c.label} audits are ignored.`}</span>${s.t ? ignBtn(list.map(i=>i.id), `Ignore all ${c.label}`) : ignBtn(list.map(i=>i.id), "Restore all", true)}</div>` : ""}${!list.length ? `<div class="empty ok">${icon("check")}No failed audits inside <code>${PAGE.scope}</code>.</div>`
+        : shown.length ? shown.map(itemHTML).join("") : `<div class="empty">Nothing matches this filter${q?" and search":""}.</div>`}</div>
+    </section>`;
+  }).join("");
+}
+
+/* ---------- views ---------- */
+function render(active){
+  renderChrome(active);
+  const area = AREAS.find(a => a.key===active);
+  if(!area){
+    const shownCount = FINDINGS.filter(passF).length;
+    view.innerHTML = `
+      <div class="grid g-top">${healthCard()}${categoryCard()}</div>
+      <div class="grid g-mid">${AXE ? axeCard() : ""}${LH ? lighthouseCard() : ""}${passingCard()}</div>
+      <div class="sechead"><h2>Findings</h2><span class="muted small">${shownCount} of ${FINDINGS.length} shown</span><span class="spacer"></span>
+        <button class="btn ghost" id="expand-all">Expand all</button><button class="btn ghost" id="collapse-all">Collapse all</button></div>
+      ${findingsHTML(visibleAreas, false) || `<div class="card empty">Nothing matches this filter${q?" and search":""}.</div>`}`;
+  } else {
+    const list = inArea(area.key), s = stats(list);
+    view.innerHTML = `
+      <section class="card areahero"><span class="aicon">${icon(area.key)}</span>
+        <div><h2>${area.label}</h2><small>${s.t} findings · ${s.o} open · ${s.p} pending · ${s.c} closed${s.ig?` · ${s.ig} ignored`:""}</small></div>
+        <span class="grow"></span><span class="prog">${segm(24, s.c/s.t, s.p/s.t)}<b>${s.t?s.pct+"%":"—"}</b></span>
+        ${s.t ? ignBtn(list.map(i=>i.id), `Ignore all ${area.label}`) : ignBtn(list.map(i=>i.id), `Restore all ${area.label}`, true)}</section>
+      ${area.key==="axe" && AXE ? axeCard(false) : ""}
+      ${area.key==="lighthouse" && LH ? lighthouseDetailHTML() + lighthouseSectionsHTML() : findingsHTML([area], true)}`;
+  }
+  bind(active);
+}
+
+function setStatus(id, key, active){
+  if(key === "open") delete status[id]; else status[id] = key;
+  store("status", status);
+  if(ST[key]?.needsTeam && !(team[id]||"").trim()) focusTeam = id;
+  render(active);
+}
+
+function bind(active){
+  view.querySelectorAll(".ignbtn").forEach(b => b.addEventListener("click", () => {
+    b.dataset.ign.split(",").forEach(id => { if(b.dataset.mode==="ignore") ignored[id] = true; else delete ignored[id]; });
+    store("ignored", ignored); render(active);
+  }));
+  view.querySelectorAll("[data-go]").forEach(el => {
+    const go = () => { location.hash = el.dataset.go; };
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", e => { if(e.key==="Enter") go(); });
+  });
+  view.querySelectorAll(".fsec-head").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.area, sec = b.closest(".fsec"), nowCol = !sec.classList.contains("collapsed");
+    sec.classList.toggle("collapsed", nowCol); b.setAttribute("aria-expanded", String(!nowCol));
+    if(nowCol) collapsed[k] = true; else delete collapsed[k];
+    store("collapsed", collapsed);
+  }));
+  const setAll = col => { AREAS.forEach(a => { if(col) collapsed[a.key] = true; else delete collapsed[a.key]; }); store("collapsed", collapsed); render(active); };
+  document.getElementById("expand-all")?.addEventListener("click", () => setAll(false));
+  document.getElementById("collapse-all")?.addEventListener("click", () => setAll(true));
+  view.querySelectorAll(".xbtn[data-toggle]").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.id, kind = b.dataset.toggle, panel = document.getElementById(`${kind}-${id}`), open = panel.hidden;
+    panel.hidden = !open; b.setAttribute("aria-expanded", String(open));
+    const set = kind==="how" ? openHow : openNodes; if(open) set.add(id); else set.delete(id);
+  }));
+  view.querySelectorAll(".notebtn").forEach(b => b.addEventListener("click", () => {
+    const wrap = b.closest(".notewrap"), ta = wrap.querySelector("textarea");
+    openNotes.add(ta.dataset.note);
+    b.hidden = true; wrap.querySelector(".notehint").hidden = false; ta.hidden = false; ta.focus();
+  }));
+  view.querySelectorAll(".notewrap textarea").forEach(ta => ta.addEventListener("input", () => {
+    const k = ta.dataset.note;
+    if(ta.value.trim()) notes[k] = ta.value; else delete notes[k];
+    store("notes", notes); updateNoteCount();
+    ta.closest(".finding").querySelector(".hasnote").hidden = !ta.value.trim();
+  }));
+  view.querySelectorAll(".cb").forEach(cb => cb.addEventListener("change", e => setStatus(e.target.closest(".finding").dataset.id, e.target.checked ? "fixed" : "open", active)));
+  view.querySelectorAll("select[data-status]").forEach(sel => sel.addEventListener("change", () => setStatus(sel.dataset.status, sel.value, active)));
+  view.querySelectorAll("input[data-team]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const id = inp.dataset.team;
+      if(inp.value.trim()) team[id] = inp.value; else delete team[id];
+      store("team", team);
+      inp.classList.toggle("missing", !inp.value.trim());
+      const hint = inp.closest(".statusrow").querySelector(".teamhint"); if(inp.value.trim() && hint) hint.remove();
+      const pill = inp.closest(".finding").querySelector(".tag.res"); if(pill) pill.textContent = `Pending · ${inp.value.trim() || "team not set"}`;
+    });
+  });
+  if(focusTeam){ document.getElementById(`team-${focusTeam}`)?.focus(); focusTeam = null; }
+  updateNoteCount();
+}
+
+/* ---------- top bar actions ---------- */
+document.getElementById("copy").addEventListener("click", async () => {
+  const k = (location.hash||"").slice(1), areas = visibleAreas.filter(a => !AREAS.some(x=>x.key===k) || a.key===k);
+  let txt = `Handoff QA: ${PAGE.name} (${PAGE.url})\n`;
+  areas.forEach(a => {
+    const open = inArea(a.key).filter(isOpen); if(!open.length) return;
+    txt += `\n## ${strip(a.label)}\n` + open.map(i => `- [ ] [${SEV[i.status]}] ${strip(i.title)}${i.where?` (${strip(i.where)})`:""}${i.fix?`\n  Fix: ${strip(i.fix)}`:""}`).join("\n") + "\n";
+  });
+  const msg = document.getElementById("copied");
+  try{ await navigator.clipboard.writeText(txt); msg.textContent = "Copied."; }catch(e){ msg.textContent = "Copy blocked."; }
+  setTimeout(() => msg.textContent = "", 2500);
+});
+const qEl = document.getElementById("q");
+qEl.addEventListener("input", () => { q = qEl.value.trim().toLowerCase(); route(); });
+document.addEventListener("keydown", e => {
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if((e.key==="/" && !typing) || (e.key==="k" && (e.metaKey||e.ctrlKey))){ e.preventDefault(); qEl.focus(); }
+});
+
+/* ---------- Export for Claude (recheck + internal log) ---------- */
+function notesExport(){
+  const LIVE = FINDINGS.filter(i => !ignored[i.id]), igCount = FINDINGS.length - LIVE.length;
+  const line = i => {
+    const n = (notes[i.id]||"").trim();
+    return `- [${i.id}] ${strip(i.title)} (${strip(i.where||"")})` +
+      (i.fix ? `\n  Fix: ${strip(i.fix)}` : "") +
+      (n ? `\n  Note: ${n.replace(/\n/g,"\n        ")}` : "");
+  };
+  const by = key => LIVE.filter(i => st(i).key === key);
+  let txt = `Handoff QA export: ${PAGE.name} (${PAGE.url})\n${PAGE.pass} · ${PAGE.date} · scope ${PAGE.scope}\n`;
+
+  const mine = by("not_mine");
+  if(mine.length){
+    const groups = {};
+    mine.forEach(i => { const t = (team[i.id]||"").trim() || "Team not set"; (groups[t] ||= []).push(i); });
+    txt += `\n## PENDING: other teams\n` + Object.entries(groups).map(([t, list]) => `### ${t}\n${list.map(line).join("\n")}`).join("\n") + "\n";
+  }
+  const client = by("pending_client");
+  if(client.length) txt += `\n## PENDING: client\n${client.map(line).join("\n")}\n`;
+  const discuss = by("discuss");
+  if(discuss.length) txt += `\n## PENDING: needs discussion\n${discuss.map(line).join("\n")}\n`;
+
+  const dismissed = LIVE.filter(i => bucket(i)==="closed" && st(i).key !== "fixed");
+  if(dismissed.length) txt += `\n## Closed without a fix\n${dismissed.map(i => line(i).replace(/^- (\[[^\]]+\])/, `- $1 ${st(i).label}:`)).join("\n")}\n`;
+  const fixed = by("fixed").filter(i => !i.verified);
+  if(fixed.length) txt += `\n## Fixed by me (please re-verify)\n${fixed.map(line).join("\n")}\n`;
+  const openNoted = LIVE.filter(i => bucket(i)==="open" && (notes[i.id]||"").trim());
+  if(openNoted.length) txt += `\n## Notes on open items\n${openNoted.map(line).join("\n")}\n`;
+
+  if(txt.split("\n## ").length === 1) txt += `\n(Nothing marked yet.)\n`;
+  if(igCount) txt += `\n(${igCount} ignored item${igCount===1?"":"s"} left out on purpose. Don't add them to the internal log.)\n`;
+  return txt;
+}
+document.getElementById("copy-notes").addEventListener("click", async () => {
+  const msg = document.getElementById("notes-copied");
+  try{ await navigator.clipboard.writeText(notesExport()); msg.textContent = "Copied. Paste it into the chat."; }catch(e){ msg.textContent = "Your browser blocked copying here."; }
+});
+
+document.getElementById("pc-name").textContent = PAGE.name;
+const pcUrl = document.getElementById("pc-url"); pcUrl.href = PAGE.url; pcUrl.textContent = PAGE.url.replace("https://","");
+document.getElementById("team-list").innerHTML = TEAMS.map(t => `<option value="${esc(t)}">`).join("");
+
+function route(){
+  const k = (location.hash || "").slice(1);
+  render(visibleAreas.some(a => a.key === k) ? k : "all");
+}
+window.addEventListener("hashchange", () => { filter = "all"; route(); });
+route();
+</script>
+</body>
+</html>
