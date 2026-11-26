@@ -4,7 +4,7 @@ description: >-
   Write the daily internal log (the task update posted on Productive) for the
   work done on a task: [UPDATE — DD/Mon] header, then [COMPLETED], [QA],
   [PENDING], [TO CONFIRM] and [CLIENT CONFIRMATION] sections in plain text, in
-  Lucas's voice. Pulls from what was done in the session, the user's notes, the
+  the user's own voice. Pulls from what was done in the session, the user's notes, the
   handoff-qa "Copy for Claude" export, and links. Use when the user asks for the
   internal log, the log, the update for today, the Productive update, or to
   "log what I did", at the end of a work day or when closing a task.
@@ -12,11 +12,11 @@ description: >-
 
 # Internal log
 
-At the end of each work day on a task (closed or not), Lucas posts an update on the task in **Productive**. This skill writes that update: same format, same voice, ready to paste.
+At the end of each work day on a task (closed or not), the user posts an update on the task in **Productive**. This skill writes that update: same format, written in the user's own voice, ready to paste.
 
 > **Hard rule: the log only contains work from the task where the skill is being used.** Every item must come from this session or from what the user gave for this task (notes, pasted export, links). Nothing from `references/examples.md`, nothing from older logs, nothing from other projects or other sessions, even when the work looks similar. If an item can't be traced to this task, it doesn't go in.
 
-`references/examples.md` shows the **format and voice only** (structure, sentence shape, level of detail). Its first example is the **length benchmark**; the older ones below it are more detailed than Lucas wants, so take only their structure. Read it before the first log of a session, then write the log from scratch. Never copy its items, names, numbers, pages, people, URLs or issue IDs.
+`references/examples.md` shows the **format and voice only** (structure, sentence shape, level of detail). Its first example is the **length benchmark**; the older ones below it are more detailed than wanted, so take only their structure. Read it before the first log of a session, then write the log from scratch. Never copy its items, names, numbers, pages, people, URLs or issue IDs.
 
 ## 1. Gather the material
 
@@ -89,14 +89,14 @@ Issues solved: #12, #13, #14.
 | --- | --- | --- |
 | `[COMPLETED]` | Work finished today: builds, fixes, CMS changes, scripts, research and findings, guidance given to someone, recommendations made | Done |
 | `[QA]` | Only when a QA round happened: what QA checked and fixed (accessibility, images, embeds, Lighthouse, axe). Otherwise QA work goes in COMPLETED | Done |
-| `[PENDING]` | **Lucas's own** unfinished work: what's left because the work day ended, the next steps he'll pick up tomorrow | Lucas |
+| `[PENDING]` | **The user's own** unfinished work: what's left because the work day ended, the next steps they'll pick up tomorrow | The user |
 | `[TO CONFIRM]` | **Internal**: questions for the team or PM, decisions to align on, work handed to another internal team | The team |
 | `[CLIENT CONFIRMATION]` | **Waiting on the client**: content, assets, approvals, decisions, answers | The client |
 
 Judgement calls:
 
-- Something only Lucas can continue → PENDING, even if it's large.
-- Lucas can't continue until the client sends or decides something → CLIENT CONFIRMATION, and if there's work for Lucas after that, a PENDING item too ("Populate the FAQs once the client sends the content").
+- Something only the user can continue → PENDING, even if it's large.
+- The user can't continue until the client sends or decides something → CLIENT CONFIRMATION, and if there's work for the user after that, a PENDING item too ("Populate the FAQs once the client sends the content").
 - A doubt about whether something is intended (e.g. a page already live on production) → TO CONFIRM as a direct question.
 - Waiting on another internal team (Development, Design, SEO…) → TO CONFIRM, naming the team: "Development team to fix the focus trap on the cloned marquee links."
 
@@ -109,10 +109,10 @@ Judgement calls:
 | PENDING: client | `[CLIENT CONFIRMATION]` | What the client has to send or decide |
 | PENDING: other teams | `[TO CONFIRM]` | "\<Team> team to …", one item per finding or group |
 | PENDING: needs discussion | `[TO CONFIRM]` | As a question |
-| Notes on open items / open items | `[PENDING]` | Next step Lucas will take |
+| Notes on open items / open items | `[PENDING]` | Next step the user will take |
 | Ignored items | Nothing | Never mentioned, never logged |
 
-Group related findings into one item instead of one line per finding ("Fixed accessibility issues across heading hierarchy, landmarks, link labels, and axe errors"). Mention the QA dashboard as an attachment when Lucas will attach it.
+Group related findings into one item instead of one line per finding ("Fixed accessibility issues across heading hierarchy, landmarks, link labels, and axe errors"). Mention the QA dashboard as an attachment when the user will attach it.
 
 ## 4. The voice
 
@@ -130,7 +130,7 @@ Group related findings into one item instead of one line per finding ("Fixed acc
 - **TO CONFIRM items** are one short line, with no background or explanation of the options: "Confirm whether to …", a direct action for the team ("Add the staging domain to the cookie banner allow-list."), or "\<Team> team to …".
 - **CLIENT CONFIRMATION items** are one short line saying what the client has to send or decide: "Confirm whether …", "Client to send …".
 - Professional and factual, never salesy, no filler ("successfully", "seamlessly").
-- Fix spelling and grammar, keep the voice. Lucas writes in English even when the session is in another language.
+- Fix spelling and grammar, keep the user's voice. Write in English even when the session is in another language.
 
 ## 5. Closing lines (when relevant)
 
@@ -147,4 +147,4 @@ After the last section, each separated by a blank line:
 - Check before handing over: every item traces back to this task (if one reminds you of an example log, delete it); date is today; every section non-empty; items in the right section by owner; nothing ignored is mentioned; no markdown slipped in; no invented numbers; every item is one short sentence with no class names, selectors, pixel values or code detail. If an item reads like a changelog for developers, cut it down.
 - Output the log in **one plain code block** (so it copies cleanly into Productive), and nothing else except, if needed, one line below it listing anything you left out or weren't sure about.
 - Don't save it to a file unless asked.
-- If Lucas asks to adjust it ("make it shorter", "move X to pending"), rewrite the whole block.
+- If the user asks to adjust it ("make it shorter", "move X to pending"), rewrite the whole block.

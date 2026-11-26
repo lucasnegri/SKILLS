@@ -19,6 +19,5 @@ Restart Claude Code, then type `/task-intake`, `/handoff-qa` or `/internal-log` 
 
 ## Before you use them
 
-- **internal-log** is written in Lucas's voice and refers to him by name. Replace "Lucas" in `internal-log/SKILL.md` with your own name.
 - **task-intake** uses `~/Documents/Projects/N4 Studio` as the root. Set the `N4_ROOT` environment variable to use a different folder.
 - Names in the examples (Acme, Venue A, Product A, example-staging.webflow.io) are placeholders.

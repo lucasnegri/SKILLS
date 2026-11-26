@@ -6,7 +6,7 @@ Real logs, lightly cleaned (typos fixed, labels standardised).
 
 ## Length benchmark (current format: match this length and density)
 
-The examples after this one are older and more detailed than Lucas wants now. Use them for structure only; write items as short as these.
+The examples after this one are older and more detailed than wanted now. Use them for structure only; write items as short as these.
 
 ```
 [UPDATE — 13/Nov]
@@ -277,7 +277,7 @@ https://example-staging.webflow.io/services/service-c
 
 ## From a handoff-qa export (how the mapping reads)
 
-Export pasted by Lucas: 2 items "PENDING: other teams / Development", 1 "PENDING: client", 4 "Fixed by me", 1 "Closed without a fix (False positive)", 3 ignored Lighthouse items.
+Export pasted by the user: 2 items "PENDING: other teams / Development", 1 "PENDING: client", 4 "Fixed by me", 1 "Closed without a fix (False positive)", 3 ignored Lighthouse items.
 
 ```
 [UPDATE 12/Nov]
