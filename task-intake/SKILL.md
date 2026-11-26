@@ -1,12 +1,12 @@
 ---
 name: task-intake
 description: >-
-  Start a new N4 Studio task: identify the client, create the task folder
-  (N4 Studio/<Client>/#T<id> - <Task name>/) and populate it with foundation/,
+  Start a new task: identify the client, create the task folder
+  (<Projects>/<Client>/#T<id> - <Task name>/) and populate it with foundation/,
   development/ and reference/ folders, with foundation/context.md (intake
   summary + the raw Productive ticket). Use at
   the start of any task: when the user pastes a Productive ticket, Slack thread
-  or client message, gives a task number ("#T10700", "new task for Acme"),
+  or client message, gives a task number ("#T1234", "new task for Client Name"),
   says "new task", "start task", "set up the task", "intake", or opens a
   session with a ticket and nothing else. If the folder already exists, open
   it instead of creating a duplicate.
@@ -17,9 +17,9 @@ description: >-
 Every task lives in its own folder with the same three subfolders. `foundation/context.md` is the source of truth for the session:
 
 ```
-~/Documents/Projects/N4 Studio/
-└── Acme/                                    client folder (has AGENTS.md, README.md)
-    └── #T10688 - Lead attribution issue/
+~/Documents/Projects/
+└── Client Name/                             client folder (has AGENTS.md, README.md)
+    └── #T1234 - Homepage hero fix/
         ├── foundation/
         │   └── context.md                   intake summary + raw ticket
         ├── development/                     working files: section-scaffold folders, code, exports
@@ -46,7 +46,7 @@ Save the paste to the scratchpad and resolve it:
 python3 -I $S resolve - < "<scratchpad>/ticket.txt"
 ```
 
-It returns `code` (e.g. `ACME`), `id` (e.g. `10688`, or `adhoc`), `title`, and the matching `clients`. These rules apply:
+It returns `code` (e.g. `CLNT`), `id` (e.g. `1234`, or `adhoc`), `title`, and the matching `clients`. These rules apply:
 
 - **One client match**: use it.
 - **Several or none**: run `python3 -I $S clients` (it lists each client folder with the codes seen in its tickets) and choose from that. If it's still unclear, ask the user with the closest 2–3 candidates.
@@ -68,8 +68,8 @@ python3 -I $S create "<Client>" <id> "<Title>"
 Keep the user's habit: the raw ticket stays in the file verbatim. Put a short intake summary on top so later skills (`internal-log`, `handoff-qa`, `section-scaffold`) can read it fast.
 
 ```markdown
-#T10688
-ACME | Lead attribution issue
+#T1234
+CLNT | Homepage hero fix
 
 ## Intake (YYYY-MM-DD)
 **Ask:** one or two sentences, in plain words, of what the client actually wants.

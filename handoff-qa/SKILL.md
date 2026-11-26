@@ -1,7 +1,7 @@
 ---
 name: handoff-qa
 description: >-
-  Run N4's pre-handoff QA on a Webflow page: HTML and heading structure, hero
+  Run the pre-handoff QA on a Webflow page: HTML and heading structure, hero
   media, images, links and screen-reader text, embeds, component props, console
   output, missing alt and aria-labels, typos, 400% zoom, axe DevTools, and
   Lighthouse in incognito. Use when the user asks for handoff QA, a pre-handoff
@@ -21,7 +21,7 @@ Every row runs on the main wrapper only: the `main` block, `#main`. Do not file 
 
 If they limit the pass to one section, audit that section only, and it still has to sit inside `main`. Do not file full-page Lighthouse nodes that live outside `main`.
 
-Their sheet legend says yellow rows apply only to projects in the N4 system. Which rows are yellow is not recorded here. Run every row unless the user marks one out of scope.
+Their sheet legend says yellow rows apply only to projects in the internal system. Which rows are yellow is not recorded here. Run every row unless the user marks one out of scope.
 
 ## Evidence
 

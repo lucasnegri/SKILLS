@@ -1,6 +1,6 @@
 # SKILLS
 
-Three [Claude Code](https://claude.com/claude-code) skills for the N4 Studio Webflow workflow. Each one covers a step of a task:
+Three [Claude Code](https://claude.com/claude-code) skills for a Webflow agency workflow. Each one covers a step of a task:
 
 ```
 task-intake    →    (build / fix the page)    →    handoff-qa    →    internal-log
@@ -19,15 +19,15 @@ start the task                                     check the page     post the d
 **Sets up a new task in under a minute, so every task starts with the same folder and context.**
 
 ### When to use it
-At the start of any task. Paste the Productive ticket (description and comments), a Slack thread or a client message, or just say `new task #T10700`.
+At the start of any task. Paste the Productive ticket (description and comments), a Slack thread or a client message, or just say `new task #T1234`.
 
 ### What it does
-1. **Works out the client** from the ticket's code (e.g. `ACME | Lead attribution issue`) and matches it to an existing client folder. If it isn't sure, it asks you.
+1. **Works out the client** from the ticket's code (e.g. `CLNT | Homepage hero fix`) and matches it to an existing client folder. If it isn't sure, it asks you.
 2. **Creates the task folder:**
    ```
-   N4 Studio/
-   └── Acme/
-       └── #T10688 - Lead attribution issue/
+   Projects/
+   └── Client Name/
+       └── #T1234 - Homepage hero fix/
            ├── foundation/
            │   └── context.md     ← intake summary + the raw ticket
            ├── development/       ← code, section files, exports
@@ -40,7 +40,7 @@ If the task folder already exists, it opens it instead of creating a duplicate, 
 
 ### Try it
 > `/task-intake` and paste the ticket
-> "new task #T10700 for Acme: fix the hero on /about"
+> "new task #T1234 for Client Name: fix the hero on /about"
 
 ---
 
@@ -131,6 +131,6 @@ cp -R SKILLS/task-intake SKILLS/handoff-qa SKILLS/internal-log ~/.claude/skills/
 Restart Claude Code. Then call a skill by name (`/task-intake`, `/handoff-qa`, `/internal-log`) or just ask in plain words.
 
 ### Notes
-- **task-intake** creates task folders under `~/Documents/Projects/N4 Studio`. To use a different folder, set the `N4_ROOT` environment variable.
+- **task-intake** creates task folders under `~/Documents/Projects`. To use a different folder, set the `TASKS_ROOT` environment variable.
 - **handoff-qa** works best with the Webflow MCP connected and a browser available for axe DevTools and Lighthouse. Without them, those checks appear as manual items on the dashboard.
-- Client names, people and URLs in the examples (Acme, Venue A, Product A, example-staging.webflow.io) are placeholders.
+- Client names, people and URLs in the examples (Client Name, Venue A, Product A, example-staging.webflow.io) are placeholders.

@@ -370,7 +370,7 @@ const FINDINGS = [
     found:"Each logo ships a 5-size srcset.",
     fix:"Disable responsive images on these assets." },
   { id:"link-sr-default", area:"links", rule:"Links", status:"fail",
-    title:"Screen reader text is still \"Learn more about N4\"", where:"CTA section › Clickable component",
+    title:"Screen reader text is still \"Learn more about us\"", where:"CTA section › Clickable component",
     expected:"SR text that names the destination.",
     found:"Button Text SR prop is on the default.",
     fix:"Set it to something like \"Book a tour of the venue\"." },
@@ -540,7 +540,7 @@ const HOWTO = {
     steps:["Select a logo image.", "Settings panel › Image settings › turn <b>Responsive</b> off.", "Repeat for every logo, or once on the component image if the strip is a component."],
   },
   "link-sr-default": {
-    why:"\"Learn more about N4\" is the component default. Screen reader users hear it instead of where the link goes.",
+    why:"\"Learn more about us\" is the component default. Screen reader users hear it instead of where the link goes.",
     steps:["Select the Clickable component instance in the CTA section.", "In the component props, find <b>Button Text SR</b>.", "Write the destination, e.g. \"Book a tour of the venue\".", "Check every other Clickable on the page for the same default."],
   },
   "link-overflow-parent": {

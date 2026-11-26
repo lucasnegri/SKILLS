@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Task intake helper for the N4 Studio workspace.
+"""Task intake helper for the task workspace.
 
   intake.py clients                      list client folders + the ticket codes seen in them
   intake.py resolve "<text>"             guess client, task id and title from a ticket paste or short line
   intake.py find <client> <id>           print existing task folders for that id (duplicate check)
   intake.py create <client> <id> "<title>"   create the task folder (prints its path)
 
-<id> is a number like 10700 (or T10700 / #T10700), or "adhoc".
+<id> is a number like 1234 (or T1234 / #T1234), or "adhoc".
 Standard library only.
 """
 import json
@@ -15,7 +15,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(os.environ.get("N4_ROOT", Path.home() / "Documents/Projects/N4 Studio"))
+ROOT = Path(os.environ.get("TASKS_ROOT", Path.home() / "Documents/Projects"))
 CODE_RE = re.compile(r"^\s*([A-Z]{3,5})\s*\|\s*(.+?)\s*$", re.M)
 ID_RE = re.compile(r"#?\[?T\s?(\d{4,6})\b")
 ADHOC_RE = re.compile(r"#?T?ad\s?-?hoc", re.I)
